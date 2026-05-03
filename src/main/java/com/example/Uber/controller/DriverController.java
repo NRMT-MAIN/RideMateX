@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/drivers")
+@RequestMapping("/api/v1/drivers")
 @RequiredArgsConstructor
 public class DriverController {
     

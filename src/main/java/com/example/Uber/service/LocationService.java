@@ -5,6 +5,8 @@ import com.example.Uber.dto.DriverLocationDTO;
 import java.util.List;
 
 public interface LocationService {
-    boolean saveDriverLocation(String driverId, double latitude, double longitude);
-    List<DriverLocationDTO> getNearbyDrivers(double latitude, double longitude, double radius);
+
+    Boolean saveDriverLocation(String driverId, Double latitude, Double longitude);
+
+    List<DriverLocationDTO> getNearbyDrivers(Double latitude, Double longitude, Double radius);
 }
