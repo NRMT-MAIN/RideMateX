@@ -201,7 +201,7 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + id));
 
-        // Only one driver can accept
+         //Only one driver can accept
         if (booking.getDriver() != null) {
             System.out.println("Booking #" + id + " already accepted by Driver #" + booking.getDriver().getId());
             return false;

@@ -12,7 +12,7 @@ import java.util.List;
 
 @Component
 public class GrpcClient {
-    @Value("${grpc.client.port:9090}")
+    @Value("${grpc.client.port:9091}")
     private int grpcClientPort;
 
     @Value("${grpc.client.host:localhost}")

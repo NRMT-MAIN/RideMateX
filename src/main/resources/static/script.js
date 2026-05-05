@@ -70,7 +70,6 @@ async function bookRide() {
     const pickupLng = parseFloat(document.getElementById('pickupLng').value);
     const destLat = parseFloat(document.getElementById('destLat').value);
     const destLng = parseFloat(document.getElementById('destLng').value);
-    const radius = parseFloat(document.getElementById('searchRadius').value);
 
     if (!passengerId || !pickupLat || !pickupLng || !destLat || !destLng) {
         showAlert('passengerAlert', 'Please fill all fields', 'error');
@@ -78,38 +77,46 @@ async function bookRide() {
     }
 
     const nearbyDiv = document.getElementById('nearbyDrivers');
-    nearbyDiv.innerHTML = '<div class="spinner"></div><p class="loading">Searching for nearby drivers...</p>';
-
-    console.log('🔍 Searching for drivers near:', pickupLat, pickupLng, 'with radius:', radius);
+    nearbyDiv.innerHTML = '<div class="spinner"></div><p class="loading">Creating booking...</p>';
 
     try {
-        // Get nearby drivers
-        const response = await fetch(`${API_BASE_URL}/location/nearbyDrivers`, {
+        const bookingData = {
+            passengerId: parseInt(passengerId),
+            pickupLocationLatitude: pickupLat,
+            pickupLocationLongitude: pickupLng,
+            dropoffLocation: `${destLat},${destLng}`,
+            fare: 5.00
+        };
+
+        console.log('📤 Creating booking:', bookingData);
+
+        const response = await fetch(`${API_BASE_URL}/bookings`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                latitude: pickupLat,
-                longitude: pickupLng,
-                radius
-            })
+            body: JSON.stringify(bookingData)
         });
 
         console.log('Response status:', response.status);
 
         if (response.ok) {
-            const drivers = await response.json();
-            console.log('📍 Found drivers:', drivers);
+            const data = await response.json();
+            console.log('✅ Booking created:', data);
 
-            if (drivers && drivers.length > 0) {
-                displayNearbyDrivers(drivers, passengerId, pickupLat, pickupLng, destLat, destLng);
-            } else {
-                showAlert('passengerAlert', '❌ No nearby drivers found', 'error');
-                nearbyDiv.innerHTML = '<p style="color: #666;">No nearby drivers available. Please try:</p><ul style="color: #666;"><li>Make sure drivers have updated their location</li><li>Increase the search radius</li><li>Try a different pickup location</li></ul>';
-            }
+            showAlert(
+                'passengerAlert',
+                `✓ Booking created successfully! Booking ID: ${data.id}`,
+                'success'
+            );
+
+            nearbyDiv.innerHTML = `
+                <p style="color: #28a745; font-weight: bold;">
+                    ✅ Booking created successfully. Waiting for driver acceptance...
+                </p>
+            `;
         } else {
             const errorData = await response.json();
-            showAlert('passengerAlert', `Error: ${errorData.message || 'Search failed'}`, 'error');
-            nearbyDiv.innerHTML = '<p style="color: red;">Failed to search drivers</p>';
+            showAlert('passengerAlert', `Error: ${errorData.message || 'Booking failed'}`, 'error');
+            nearbyDiv.innerHTML = '<p style="color: red;">Failed to create booking</p>';
         }
     } catch (error) {
         console.error('Error:', error);
@@ -117,6 +124,7 @@ async function bookRide() {
         nearbyDiv.innerHTML = '';
     }
 }
+
 
 function displayNearbyDrivers(drivers, passengerId, pickupLat, pickupLng, destLat, destLng) {
     let html = `<h3 style="margin-top: 30px; margin-bottom: 15px; color: #28a745;">✓ Found ${drivers.length} Nearby Driver(s)</h3>`;
