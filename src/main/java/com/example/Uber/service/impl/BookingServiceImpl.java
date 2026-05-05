@@ -194,7 +194,33 @@ public class BookingServiceImpl implements BookingService {
         Booking updatedBooking = bookingRepository.save(booking);
         return bookingMapper.toResponse(updatedBooking);
     }
-    
+
+    @Override
+    public Boolean acceptRide(Long id, Long driverId) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + id));
+
+        if (booking.getDriver() != null) {
+            return false; // Ride already accepted by another driver
+        }
+
+        Driver driver = driverRepository.findById(driverId)
+                .orElseThrow(() -> new IllegalArgumentException("Driver not found with id: " + driverId));
+
+        if (!driver.getIsAvailable()) {
+            return false; // Driver is not available
+        }
+
+        driver.setIsAvailable(false);
+        driverRepository.save(driver);
+
+        booking.setDriver(driver);
+        booking.setStatus(Booking.BookingStatus.CONFIRMED);
+        bookingRepository.save(booking);
+
+        return true;
+    }
+
     @Override
     public void deleteById(Long id) {
         Booking booking = bookingRepository.findById(id)
