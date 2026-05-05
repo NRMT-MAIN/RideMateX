@@ -30,7 +30,10 @@ public class Booking {
     private Driver driver;
     
     @Column(nullable = false)
-    private String pickupLocation;
+    private String pickupLocationLatitude;
+
+    @Column(nullable = false)
+    private String pickupLocationLongitude;
     
     @Column(nullable = false)
     private String dropoffLocation;
