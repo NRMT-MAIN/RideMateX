@@ -6,15 +6,17 @@ import com.example.RideMateXSocket.RideNotificationServiceGrpc;
 import io.grpc.ManagedChannel;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class GrpcClient {
-    @Value("${grpc.server.port:9090}")
-    private int grpcServerPort;
+    @Value("${grpc.client.port:9090}")
+    private int grpcClientPort;
 
-    @Value("${grpc.server.host:localhost}")
-    private String grpcServerHost;
+    @Value("${grpc.client.host:localhost}")
+    private String grpcClientHost;
 
 
     private ManagedChannel channel;
@@ -23,7 +25,7 @@ public class GrpcClient {
 
     @PostConstruct
     public void init() {
-        channel = io.grpc.ManagedChannelBuilder.forAddress(grpcServerHost, grpcServerPort)
+        channel = io.grpc.ManagedChannelBuilder.forAddress(grpcClientHost , grpcClientPort)
                 .usePlaintext()
                 .build();
 

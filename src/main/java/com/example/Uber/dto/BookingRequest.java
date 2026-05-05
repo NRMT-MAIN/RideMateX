@@ -22,10 +22,10 @@ public class BookingRequest {
     
     private Long driverId;
     
-    @NotBlank(message = "Pickup location latitude is required")
+    @NotNull(message = "Pickup location latitude is required")
     private Double pickupLocationLatitude;
 
-    @NotBlank(message = "Pickup location longitude is required")
+    @NotNull(message = "Pickup location longitude is required")
     private Double pickupLocationLongitude;
     
     @NotBlank(message = "Dropoff location is required")

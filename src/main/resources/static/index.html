@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RideMateX - Ride Booking</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🚗 RideMateX</h1>
+        <p>Your Ride, Your Way</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-button active" onclick="switchTab('passenger')">Passenger</button>
+        <button class="tab-button" onclick="switchTab('driver')">Driver</button>
+        <button class="tab-button" onclick="switchTab('bookings')">My Bookings</button>
+    </div>
+
+    <div class="content">
+        <!-- PASSENGER TAB -->
+        <div id="passenger" class="tab-content active">
+            <div class="alert" id="passengerAlert"></div>
+
+            <h2>Passenger Registration</h2>
+            <div class="form-group">
+                <div class="form-row">
+                    <div>
+                        <label>Name</label>
+                        <input type="text" id="passengerName" placeholder="Enter your name">
+                    </div>
+                    <div>
+                        <label>Email</label>
+                        <input type="email" id="passengerEmail" placeholder="Enter your email">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label>Phone</label>
+                        <input type="tel" id="passengerPhone" placeholder="Enter your phone">
+                    </div>
+                    <div>
+                        <label>Rating</label>
+                        <input type="number" id="passengerRating" placeholder="1-5" min="1" max="5">
+                    </div>
+                </div>
+            </div>
+            <button onclick="registerPassenger()">Register as Passenger</button>
+
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+
+            <h2>Book a Ride</h2>
+            <div class="form-group">
+                <div class="form-row">
+                    <div>
+                        <label>Passenger ID</label>
+                        <input type="number" id="bookingPassengerId" placeholder="Your passenger ID">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label>Pickup Latitude</label>
+                        <input type="number" id="pickupLat" placeholder="e.g., 28.7041" step="0.0001">
+                    </div>
+                    <div>
+                        <label>Pickup Longitude</label>
+                        <input type="number" id="pickupLng" placeholder="e.g., 77.1025" step="0.0001">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label>Destination Latitude</label>
+                        <input type="number" id="destLat" placeholder="e.g., 28.5355" step="0.0001">
+                    </div>
+                    <div>
+                        <label>Destination Longitude</label>
+                        <input type="number" id="destLng" placeholder="e.g., 77.3910" step="0.0001">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label>Radius (meters)</label>
+                        <input type="number" id="searchRadius" placeholder="e.g., 5000" value="5000">
+                    </div>
+                </div>
+            </div>
+            <button onclick="bookRide()">Search & Book Ride</button>
+
+            <div id="nearbyDrivers" style="margin-top: 30px;"></div>
+        </div>
+
+        <!-- DRIVER TAB -->
+        <div id="driver" class="tab-content">
+            <div class="alert" id="driverAlert"></div>
+
+            <h2>Driver Registration</h2>
+            <div class="form-group">
+                <div class="form-row">
+                    <div>
+                        <label>Name</label>
+                        <input type="text" id="driverName" placeholder="Enter your name">
+                    </div>
+                    <div>
+                        <label>Email</label>
+                        <input type="email" id="driverEmail" placeholder="Enter your email">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label>Phone</label>
+                        <input type="tel" id="driverPhone" placeholder="Enter your phone">
+                    </div>
+                    <div>
+                        <label>Vehicle Number</label>
+                        <input type="text" id="driverVehicle" placeholder="e.g., DL-01-AB-1234">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label>License</label>
+                        <input type="text" id="driverLicense" placeholder="License number">
+                    </div>
+                    <div>
+                        <label>Rating</label>
+                        <input type="number" id="driverRating" placeholder="1-5" min="1" max="5">
+                    </div>
+                </div>
+            </div>
+            <button onclick="registerDriver()">Register as Driver</button>
+
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+
+            <h2>Update Location</h2>
+            <div class="form-group">
+                <div class="form-row">
+                    <div>
+                        <label>Driver ID</label>
+                        <input type="number" id="driverIdLocation" placeholder="Your driver ID">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label>Latitude</label>
+                        <input type="number" id="driverLat" placeholder="e.g., 28.7041" step="0.0001">
+                    </div>
+                    <div>
+                        <label>Longitude</label>
+                        <input type="number" id="driverLng" placeholder="e.g., 77.1025" step="0.0001">
+                    </div>
+                </div>
+            </div>
+            <button onclick="updateDriverLocation()">Update Location</button>
+
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+
+            <h2>Available Drivers</h2>
+            <button onclick="loadAvailableDrivers()" style="margin-bottom: 20px;">Load Available Drivers</button>
+            <div id="availableDriversList"></div>
+        </div>
+
+        <!-- BOOKINGS TAB -->
+        <div id="bookings" class="tab-content">
+            <div class="alert" id="bookingsAlert"></div>
+
+            <h2>My Bookings</h2>
+            <div class="form-group">
+                <div class="form-row">
+                    <div>
+                        <label>Passenger ID</label>
+                        <input type="number" id="passengerIdForBookings" placeholder="Enter passenger ID">
+                    </div>
+                </div>
+            </div>
+            <button onclick="loadPassengerBookings()">Load My Bookings</button>
+
+            <div id="passengerBookingsList" style="margin-top: 30px;"></div>
+
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+
+            <h2>Driver Bookings</h2>
+            <div class="form-group">
+                <div class="form-row">
+                    <div>
+                        <label>Driver ID</label>
+                        <input type="number" id="driverIdForBookings" placeholder="Enter driver ID">
+                    </div>
+                </div>
+            </div>
+            <button onclick="loadDriverBookings()">Load Driver Bookings</button>
+
+            <div id="driverBookingsList" style="margin-top: 30px;"></div>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

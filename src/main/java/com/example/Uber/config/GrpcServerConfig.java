@@ -14,7 +14,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class GrpcServerConfig {
     @Value("${grpc.server.port:9090}")
-    private int grpcServerPort= 9090;
+    private int grpcServerPort;
 
     private Server grpcServer ;
 
