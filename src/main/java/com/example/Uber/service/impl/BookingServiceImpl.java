@@ -1,5 +1,6 @@
 package com.example.Uber.service.impl;
 
+import com.example.Uber.client.GrpcClient;
 import com.example.Uber.dto.BookingRequest;
 import com.example.Uber.dto.BookingResponse;
 import com.example.Uber.dto.DriverLocationDTO;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -32,6 +34,7 @@ public class BookingServiceImpl implements BookingService {
     private final DriverRepository driverRepository;
     private final BookingMapper bookingMapper;
     private final LocationService locationService;
+    private final GrpcClient grpcClient;
     
     @Override
     @Transactional(readOnly = true)
@@ -73,18 +76,44 @@ public class BookingServiceImpl implements BookingService {
         Passenger passenger = passengerRepository.findById(request.getPassengerId())
                 .orElseThrow(() -> new IllegalArgumentException("Passenger not found with id: " + request.getPassengerId()));
         
-//        Booking newBooking = Booking.builder()
-//                .passenger(passenger)
-//                .pickupLocationLatitude(request.getPickupLocationLatitude())
-//                .pickupLocationLongitude(request.getPickupLocationLongitude())
-//                .dropoffLocation(request.getDropoffLocation())
-//                .status(Booking.BookingStatus.PENDING)
-//                .build();
+        // Nearby driver assignment logic
+        Driver assignedDriver = null;
+
+        if(request.getDriverId() != null) {
+            assignedDriver = driverRepository.findById(request.getDriverId())
+                    .orElseThrow(() -> new IllegalArgumentException("Driver not found with id: " + request.getDriverId()));
+            if (!assignedDriver.getIsAvailable()) {
+                throw new IllegalArgumentException("Driver with id " + request.getDriverId() + " is not available");
+            }
+            assignedDriver.setIsAvailable(false);
+            driverRepository.save(assignedDriver);
+        }
+
+        String pickupLat = request.getPickupLocationLatitude() != null ? request.getPickupLocationLatitude().toString() : "N/A";
+        String pickupLon = request.getPickupLocationLongitude() != null ? request.getPickupLocationLongitude().toString() : "N/A";
+
+        if(pickupLat == "N/A" && pickupLon == "N/A") {
+            throw new IllegalArgumentException("Pickup location is required for booking");
+        }
+
+        BigDecimal fare = request.getFare() != null ? request.getFare() : BigDecimal.ZERO;
+
+        Booking newBooking = Booking.builder()
+                .passenger(passenger)
+                .driver(assignedDriver)
+                .pickupLocationLatitude(pickupLat)
+                .pickupLocationLongitude(pickupLon)
+                .dropoffLocation(request.getDropoffLocation())
+                .fare(fare)
+                .scheduledPickupTime(request.getScheduledPickupTime())
+                .build();
+
+        Booking savedBooking = bookingRepository.save(newBooking);
 
         // Raise a booking request to nearby drivers
         List<DriverLocationDTO> nearbyDrivers = locationService.getNearbyDrivers(
-                request.getPickupLocationLatitude(),
-                request.getPickupLocationLongitude(),
+                Double.parseDouble(pickupLat),
+                Double.parseDouble(pickupLon),
                 10.0
         );
 
@@ -92,7 +121,13 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalArgumentException("No available drivers nearby");
         }
 
-        return null;
+        grpcClient.notifyDriverForNewRide(
+                nearbyDrivers.stream().map(DriverLocationDTO::getDriverId).collect(Collectors.toList()),
+                pickupLat,
+                pickupLon,
+                savedBooking.getId().intValue()) ;
+
+        return bookingMapper.toResponse(savedBooking);
     }
     
     @Override
